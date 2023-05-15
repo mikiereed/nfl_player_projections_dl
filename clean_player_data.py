@@ -55,11 +55,13 @@ X_STATS = [
     "Fumbles",
 ]
 
+
 def create_data_csv(file_paths: list, number_of_previous_years: int = 3) -> None:
     player_data = dict()
     for file in file_paths:
         with open(file, 'r') as f:
-            headers = f.readline().split(",")
+            headers = f.readline().replace("\n", "")
+            headers = headers.split(",")
             data = list(csv.reader(f, delimiter=","))
         for player in data:
             if not player_data.get(player[0]):
@@ -74,7 +76,7 @@ def create_data_csv(file_paths: list, number_of_previous_years: int = 3) -> None
                     if type(player[idx]) == str:
                         player[idx] = player[idx].replace(",", "").replace("T", "")
                     player[idx] = float(player[idx])
-                if stat_desc == "Fumbles" and player_data[player[0]][player[year_idx]].get([stat_desc]):
+                if stat_desc == "Fumbles" and player_data[player[0]][player[year_idx]].get("Fumbles"):
                     player_data[player[0]][player[year_idx]][stat_desc] += player[idx]
                     continue
                 player_data[player[0]][player[year_idx]][stat_desc] = player[idx]
@@ -88,10 +90,12 @@ def create_data_csv(file_paths: list, number_of_previous_years: int = 3) -> None
         years = list(player_data[player].keys())
         years.sort(reverse=True)
         for idx, year in enumerate(years):
+            if idx == len(years) - 1:  # last year, meaning no prior data
+                continue
+
             y = list()
             for stat in Y_STATS:
                 y.append(player_data[player][year].get(stat, 0.0))
-            Y.append(y)
 
             x = list()
             for i in range(idx + 1, number_of_previous_years + idx + 1):
@@ -105,10 +109,22 @@ def create_data_csv(file_paths: list, number_of_previous_years: int = 3) -> None
                     for stat in X_STATS:
                         x_year = years[i]
                         x.append(player_data[player][x_year].get(stat, 0.0))
-            X.append(x)
 
-    # for each year, create a y (current year important) and x (past i years of stats)
+            X.append(x)
+            Y.append(y)
+
     # write the file
+    with open("./data/clean_data_X.csv", 'w', newline='') as csvfile:
+        csvwriter = csv.writer(csvfile)
+        # csvwriter.writerow(headers)
+        for x in X:
+            csvwriter.writerow(x)
+
+    with open("./data/clean_data_Y.csv", 'w', newline='') as csvfile:
+        csvwriter = csv.writer(csvfile)
+        # csvwriter.writerow(headers)
+        for y in Y:
+            csvwriter.writerow(y)
 
 
 if __name__ == "__main__":
