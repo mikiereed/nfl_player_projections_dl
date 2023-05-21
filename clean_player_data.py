@@ -116,21 +116,25 @@ def create_data_csv(file_paths: list, number_of_previous_years: int = 3) -> None
     # write the file
     with open("./data/clean_data_X.csv", 'w', newline='') as csvfile:
         csvwriter = csv.writer(csvfile)
-        # csvwriter.writerow(headers)
+        X_headers = list()
+        for i in range(1, number_of_previous_years + 1):
+            for header in X_STATS:
+                X_headers.append(f"{header} Year -{i}")
+        csvwriter.writerow(X_headers)
         for x in X:
             csvwriter.writerow(x)
 
     with open("./data/clean_data_Y.csv", 'w', newline='') as csvfile:
         csvwriter = csv.writer(csvfile)
-        # csvwriter.writerow(headers)
+        csvwriter.writerow(Y_STATS)
         for y in Y:
             csvwriter.writerow(y)
 
 
 if __name__ == "__main__":
     file_paths = [
-        "C:\\Users\\mikie\\OneDrive\\stanford homework\\cs230\\final project\\data_cleaner\\data\\Career_Stats_Passing.csv",
-        "C:\\Users\\mikie\\OneDrive\\stanford homework\\cs230\\final project\\data_cleaner\\data\\Career_Stats_Rushing.csv",
-        "C:\\Users\\mikie\\OneDrive\\stanford homework\\cs230\\final project\\data_cleaner\\data\\Career_Stats_Receiving.csv",
+        "C:\\Users\\mikie\\OneDrive\\stanford homework\\cs230\\final project\\Career_Stats_Passing.csv",
+        "C:\\Users\\mikie\\OneDrive\\stanford homework\\cs230\\final project\\Career_Stats_Rushing.csv",
+        "C:\\Users\\mikie\\OneDrive\\stanford homework\\cs230\\final project\\Career_Stats_Receiving.csv",
     ]
     create_data_csv(file_paths)
