@@ -1,7 +1,11 @@
+import os.path
+
 import numpy as np
 from sklearn import metrics
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
+
+from utils import load_dataset
 
 
 STATS_TO_BASELINE = [
@@ -16,9 +20,10 @@ STATS_TO_BASELINE = [
     ]
 
 
-def linear_regression_model(data_x: str, data_y, trials: int, random_seed: int):
+def linear_regression_model(data_path: str, trials: int, random_seed: int):
     for stat in STATS_TO_BASELINE:
-        x, y = load_dataset(csv_path_x=data_x, csv_path_y=data_y, y_column=stat, add_intercept=True)
+        stat = f"Target {stat}"
+        x, y, _, _ = load_dataset(csv_path=data_path, feature_columns=None, target_columns=[stat], add_intercept=False)
 
         reg_scores = []
         mes = []
@@ -37,40 +42,10 @@ def linear_regression_model(data_x: str, data_y, trials: int, random_seed: int):
         print(f"mes: {sum(mes) / trials}")
 
 
-def add_intercept_fn(x):
-    x_with_intercept = np.zeros((x.shape[0], x.shape[1] + 1), dtype=x.dtype)
-    x_with_intercept[:, 0] = 1
-    x_with_intercept[:, 1:] = x
-
-    return x_with_intercept
-
-
-def load_dataset(csv_path_x, csv_path_y, y_column='y', add_intercept=False):
-    with open(csv_path_x, 'r', newline='') as f:
-        x_cols = f.readline().strip().split(',')
-    x_cols = [i for i in range(len(x_cols))]
-
-    with open(csv_path_y, 'r', newline='') as f:
-        y_cols = f.readline().strip().split(',')
-    l_cols = list()
-    l_cols.append(y_cols.index(y_column))
-
-    inputs = np.loadtxt(csv_path_x, delimiter=',', skiprows=1, usecols=x_cols)
-    labels = np.loadtxt(csv_path_y, delimiter=',', skiprows=1, usecols=l_cols)
-
-    if inputs.ndim == 1:
-        inputs = np.expand_dims(inputs, -1)
-
-    if add_intercept:
-        inputs = add_intercept_fn(inputs)
-
-    return inputs, labels
-
-
 if __name__ == "__main__":
     linear_regression_model(
-        data_x="C:\\Users\\mikie\\OneDrive\\stanford homework\\cs230\\final project\\clean_data_X.csv",
-        data_y="C:\\Users\\mikie\\OneDrive\\stanford homework\\cs230\\final project\\clean_data_Y.csv",
+        # data_x="C:\\Users\\mikie\\OneDrive\\stanford homework\\cs230\\final project\\clean_data.csv",
+        data_path=os.path.join("data", "clean_data.csv"),
         trials=10,
         random_seed=88,
     )

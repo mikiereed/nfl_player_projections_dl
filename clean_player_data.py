@@ -13,7 +13,6 @@ Y_STATS = [
 ]
 
 X_STATS = [
-    "Team",
     "Games Played",
     "Passes Attempted",
     "Passes Completed",
@@ -74,15 +73,14 @@ def create_data_csv(file_paths: list, number_of_previous_years: int = 3) -> None
                     player[idx] = 0.
                 if stat_desc not in ["Player Id", "Name", "Position", "Year", "Team"]:
                     if type(player[idx]) == str:
-                        player[idx] = player[idx].replace(",", "").replace("T", "")
+                        player[idx] = player[idx].replace(",", "").replace("T", "")  # Random 'T's are added in
                     player[idx] = float(player[idx])
                 if stat_desc == "Fumbles" and player_data[player[0]][player[year_idx]].get("Fumbles"):
                     player_data[player[0]][player[year_idx]][stat_desc] += player[idx]
                     continue
                 player_data[player[0]][player[year_idx]][stat_desc] = player[idx]
 
-    X = list()
-    Y = list()
+    processed_players = list()
     # dict of all players with yearly stats
     # sort years by max first
     players = list(player_data.keys())
@@ -110,31 +108,26 @@ def create_data_csv(file_paths: list, number_of_previous_years: int = 3) -> None
                         x_year = years[i]
                         x.append(player_data[player][x_year].get(stat, 0.0))
 
-            X.append(x)
-            Y.append(y)
+            processed_players.append(x + y)
 
     # write the file
-    with open("./data/clean_data_X.csv", 'w', newline='') as csvfile:
+    with open("./data/clean_data.csv", 'w', newline='') as csvfile:
         csvwriter = csv.writer(csvfile)
-        X_headers = list()
+        headers = list()
         for i in range(1, number_of_previous_years + 1):
             for header in X_STATS:
-                X_headers.append(f"{header} Year -{i}")
-        csvwriter.writerow(X_headers)
-        for x in X:
-            csvwriter.writerow(x)
-
-    with open("./data/clean_data_Y.csv", 'w', newline='') as csvfile:
-        csvwriter = csv.writer(csvfile)
-        csvwriter.writerow(Y_STATS)
-        for y in Y:
-            csvwriter.writerow(y)
+                headers.append(f"Feature {header} Year -{i}")
+        for header in Y_STATS:
+            headers.append(f"Target {header}")
+        csvwriter.writerow(headers)
+        for player in processed_players:
+            csvwriter.writerow(player)
 
 
 if __name__ == "__main__":
-    file_paths = [
+    _file_paths = [
         "C:\\Users\\mikie\\OneDrive\\stanford homework\\cs230\\final project\\Career_Stats_Passing.csv",
         "C:\\Users\\mikie\\OneDrive\\stanford homework\\cs230\\final project\\Career_Stats_Rushing.csv",
         "C:\\Users\\mikie\\OneDrive\\stanford homework\\cs230\\final project\\Career_Stats_Receiving.csv",
     ]
-    create_data_csv(file_paths)
+    create_data_csv(_file_paths, number_of_previous_years=3)
