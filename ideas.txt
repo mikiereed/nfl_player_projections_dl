@@ -3,3 +3,4 @@ test multitask vs individual
 test gpu vs cpu
 add more predictive catagories (targets, rushing attempts, etc)
 test with just rushing, just passing, just receiveing (may fix normalization by getting rid of zeros)
+try different eval metrics

@@ -4,6 +4,7 @@ import numpy as np
 from sklearn import metrics
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import MinMaxScaler
 
 from utils import load_dataset
 
@@ -20,10 +21,15 @@ STATS_TO_BASELINE = [
     ]
 
 
-def linear_regression_model(data_path: str, trials: int, random_seed: int):
+def linear_regression_model(data_path: str, trials: int, random_seed: int, normalize_data: bool = False):
     for stat in STATS_TO_BASELINE:
         stat = f"Target {stat}"
         x, y, _, _ = load_dataset(csv_path=data_path, feature_columns=None, target_columns=[stat], add_intercept=False)
+        if normalize_data:
+            x_scaler = MinMaxScaler()
+            y_scaler = MinMaxScaler()
+            x = x_scaler.fit_transform(x)
+            y = y_scaler.fit_transform(np.reshape(y, (-1, 1)))
 
         reg_scores = []
         mes = []
@@ -46,6 +52,7 @@ if __name__ == "__main__":
     linear_regression_model(
         # data_x="C:\\Users\\mikie\\OneDrive\\stanford homework\\cs230\\final project\\clean_data.csv",
         data_path=os.path.join("data", "clean_data.csv"),
-        trials=10,
+        trials=100,
         random_seed=88,
+        normalize_data=True,
     )
