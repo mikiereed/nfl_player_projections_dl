@@ -6,14 +6,14 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import MinMaxScaler
 from pytorch_tabnet.tab_model import TabNetRegressor
+from matplotlib import pyplot as plt
 
 from utils import load_dataset
 
 
-def tabnet(data_path: str, normalize_data: bool = False):
+def tabnet(X: np.ndarray, Y: np.ndarray, normalize_data: bool = False) -> float:
     clf = TabNetRegressor()
 
-    X, Y, feature_cols, target_cols = load_dataset(data_path)
     if normalize_data:
         x_scaler = MinMaxScaler()
         y_scaler = MinMaxScaler()
@@ -51,21 +51,34 @@ def tabnet(data_path: str, normalize_data: bool = False):
     print(f"BEST VAL SCORE: {clf.best_cost}")
     print(f"FINAL TEST SCORE: {test_mse}")
 
-    clf.feature_importances_
+    # clf.feature_importances_
+    #
+    # explain_matrix, masks = clf.explain(x_test)
+    #
+    # fig, axs = plt.subplots(1, 3, figsize=(20, 20))
+    #
+    # for i in range(3):
+    #     axs[i].imshow(masks[i][:50])
+    #     axs[i].set_title(f"mask {i}")
+    #
+    # plt.show()
 
-    explain_matrix, masks = clf.explain(x_test)
-
-    from matplotlib import pyplot as plt
-
-    fig, axs = plt.subplots(1, 3, figsize=(20, 20))
-
-    for i in range(3):
-        axs[i].imshow(masks[i][:50])
-        axs[i].set_title(f"mask {i}")
-
-    plt.show()
+    return test_mse
 
 
 if __name__ == '__main__':
-    _data_path = os.path.join("data", "clean_data.csv")
-    tabnet(_data_path, normalize_data=True)
+    data_path = os.path.join("data", "clean_data.csv")
+    _X, _Y, feature_cols, target_cols = load_dataset(data_path)
+    results_file = os.path.join(".", "results.txt")
+    mse = tabnet(_X, _Y, normalize_data=False)  # run multitask model
+    with open(results_file, "a") as f:
+        f.write(f"Tabnet all (un-normalized)\n")
+        f.write(f"{mse}\n")
+
+    # run tabnet for each individual Y
+    # for target in target_cols:
+    #     _X, _Y, feature_cols, target_cols = load_dataset(data_path, target_columns=[target])
+    #     mse = tabnet(_X, _Y.reshape(-1, 1), normalize_data=False)
+    #     with open(results_file, "a") as f:
+    #         f.write(f"{target}\n")
+    #         f.write(f"{mse}\n")
