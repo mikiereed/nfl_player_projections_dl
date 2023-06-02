@@ -30,7 +30,9 @@ Target Receiving TDs
 2.6083975028454196
 Target Fumbles
 0.5599876960547162
-Tabnet all
-0.005120074368359364
 Tabnet all (un-normalized)
 28411.491803153465
+Tabnet all
+0.00517279656415335
+Tabnet all (pretrained)
+0.005152917418289826
