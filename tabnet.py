@@ -11,7 +11,7 @@ from pytorch_tabnet.pretraining import TabNetPretrainer
 from utils import load_dataset
 
 
-def tabnet(X: np.ndarray, Y: np.ndarray, normalize_data: bool = False, from_unsupervised: bool = False) -> float:
+def tabnet(X: np.ndarray, Y: np.ndarray, normalize_data: bool, pretrained_model: str, save_path: str) -> float:
     clf = TabNetRegressor()
 
     if normalize_data:
@@ -24,9 +24,9 @@ def tabnet(X: np.ndarray, Y: np.ndarray, normalize_data: bool = False, from_unsu
 
     x_val, x_test, y_val, y_test = train_test_split(x_val, y_val, test_size=0.50, random_state=88)
 
-    if from_unsupervised:
+    if pretrained_model:
         loaded_pretrain = TabNetPretrainer()
-        loaded_pretrain.load_model(os.path.join("models", "pretrained.zip"))
+        loaded_pretrain.load_model(pretrained_model)
     else:
         loaded_pretrain = None
 
@@ -44,45 +44,37 @@ def tabnet(X: np.ndarray, Y: np.ndarray, normalize_data: bool = False, from_unsu
         from_unsupervised=loaded_pretrain,
     )
 
-    saving_path_name = os.path.join("models", "tabnet_model")
-    saved_filepath = clf.save_model(saving_path_name)
-    print(f"saved at {saved_filepath}")
+    clf.save_model(save_path)
 
     preds = clf.predict(x_test)
 
     test_mse = mean_squared_error(y_pred=preds, y_true=y_test)
 
-    print(f"BEST VAL SCORE: {clf.best_cost}")
+    print(f"{save_path}")
     print(f"FINAL TEST SCORE: {test_mse}")
-
-    # clf.feature_importances_
-    #
-    # explain_matrix, masks = clf.explain(x_test)
-    #
-    # fig, axs = plt.subplots(1, 3, figsize=(20, 20))
-    #
-    # for i in range(3):
-    #     axs[i].imshow(masks[i][:50])
-    #     axs[i].set_title(f"mask {i}")
-    #
-    # plt.show()
 
     return test_mse
 
 
 if __name__ == '__main__':
-    data_path = os.path.join("data", "clean_data.csv")
-    _X, _Y, feature_cols, target_cols = load_dataset(data_path)
-    results_file = os.path.join(".", "results.txt")
-    mse = tabnet(_X, _Y, normalize_data=True, from_unsupervised=True)  # run multitask model
-    with open(results_file, "a") as f:
-        f.write(f"Tabnet all (pretrained)\n")
-        f.write(f"{mse}\n")
+    for i in range(1, 6):
+        data_path = os.path.join("data", f"clean_data_{i}.csv")
+        _X, _Y, feature_cols, target_cols = load_dataset(data_path)
+        for pretrained in [True, False]:
+            pretrained_value = "pretrained_" if pretrained else ""
+            for normalized in [True, False]:
+                normalized_value = "normalized" if normalized else "unnormalized"
+                pretrained_model = None if not pretrained else os.path.join("models", f"pretrained_{normalized_value}_{i}.zip")
+                _save_path = os.path.join("models", f"tabnet_{pretrained_value}{normalized_value}_{i}")
+                tabnet(_X, _Y, normalize_data=True, pretrained_model=pretrained_model, save_path=_save_path)  # run multitask model
 
     # # run tabnet for each individual Y
-    # for target in target_cols:
-    #     _X, _Y, feature_cols, target_cols = load_dataset(data_path, target_columns=[target])
-    #     mse = tabnet(_X, _Y.reshape(-1, 1), normalize_data=True)
-    #     with open(results_file, "a") as f:
-    #         f.write(f"{target}\n")
-    #         f.write(f"{mse}\n")
+    # for normalized in ["normalized", "unnormalized"]:
+    #     normalize_data = (normalized == "normalized")
+    #     for target in target_cols:
+    #         print(f"{normalized} {normalize_data} {target}")
+    #         _X, _Y, feature_cols, target_cols = load_dataset(data_path, target_columns=[target])
+    #         mse = tabnet(_X, _Y.reshape(-1, 1), normalize_data=normalize_data, from_unsupervised=True)
+    #         with open(results_file, "a") as f:
+    #             f.write(f"{target} (pretrained, {normalized})\n")
+    #             f.write(f"{mse}\n")

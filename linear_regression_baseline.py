@@ -43,9 +43,9 @@ def linear_regression_model(data_path: str, trials: int, random_seed: int, norma
             reg_scores.append(reg_score)
             mes.append(metrics.mean_squared_error(y_test, y_pred))
 
-        print(f"stat: {stat}")
-        print(f"reg scores: {sum(reg_scores) / trials}")
-        print(f"mes: {sum(mes) / trials}")
+        print(f"Baseline LR {stat}")
+        # print(f"reg scores: {sum(reg_scores) / trials}")
+        print(f"{sum(mes) / trials}")
 
 
 if __name__ == "__main__":
@@ -54,5 +54,5 @@ if __name__ == "__main__":
         data_path=os.path.join("data", "clean_data.csv"),
         trials=100,
         random_seed=88,
-        normalize_data=True,
+        normalize_data=False,
     )

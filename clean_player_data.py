@@ -111,7 +111,7 @@ def create_data_csv(file_paths: list, number_of_previous_years: int = 3) -> None
             processed_players.append(x + y)
 
     # write the file
-    with open("./data/clean_data.csv", 'w', newline='') as csvfile:
+    with open(f"./data/clean_data_{number_of_previous_years}.csv", 'w', newline='') as csvfile:
         csvwriter = csv.writer(csvfile)
         headers = list()
         for i in range(1, number_of_previous_years + 1):
@@ -130,4 +130,4 @@ if __name__ == "__main__":
         "C:\\Users\\mikie\\OneDrive\\stanford homework\\cs230\\final project\\Career_Stats_Rushing.csv",
         "C:\\Users\\mikie\\OneDrive\\stanford homework\\cs230\\final project\\Career_Stats_Receiving.csv",
     ]
-    create_data_csv(_file_paths, number_of_previous_years=3)
+    create_data_csv(_file_paths, number_of_previous_years=5)

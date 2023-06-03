@@ -1,0 +1,114 @@
+Baseline LR Target Passing Yards
+134896.42222606041
+Baseline LR Target TD Passes
+6.848988239034054
+Baseline LR Target Ints
+4.843901038335505
+Baseline LR Target Rushing Yards
+20667.372447956575
+Baseline LR Target Rushing TDs
+2.0222652738269034
+Baseline LR Target Receiving Yards
+28570.242285081455
+Baseline LR Target Receiving TDs
+2.4225681942212223
+Baseline LR Target Fumbles
+0.5262975198128986
+Baseline LR Target Passing Yards
+0.0044789088672283536
+Baseline LR Target TD Passes
+0.002264128343482332
+Baseline LR Target Ints
+0.003954204929253468
+Baseline LR Target Rushing Yards
+0.003958337832205391
+Baseline LR Target Rushing TDs
+0.002579419992126153
+Baseline LR Target Receiving Yards
+0.007258227687701577
+Baseline LR Target Receiving TDs
+0.005005306186407487
+Baseline LR Target Fumbles
+0.004349566279445443
+Target Passing Yards
+0.005636165178845441
+Target TD Passes
+0.0027463436302924585
+Target Ints
+0.004602131478847046
+Target Rushing Yards
+0.004870926832346059
+Target Rushing TDs
+0.0033062103075762197
+Target Receiving Yards
+0.008062830244010692
+Target Receiving TDs
+0.005550006912956537
+Target Fumbles
+0.004906453549946343
+Target Passing Yards
+169355.9949132864
+Target TD Passes
+8.504118832909722
+Target Ints
+5.809623043397704
+Target Rushing Yards
+22438.342140699107
+Target Rushing TDs
+2.5577548221750175
+Target Receiving Yards
+29678.563265141718
+Target Receiving TDs
+2.6083975028454196
+Target Fumbles
+0.5599876960547162
+
+Target Passing Yards (pretrained, normalized)
+0.005310515312259267
+Target TD Passes (pretrained, normalized)
+0.0025609207705639876
+Target Ints (pretrained, normalized)
+0.004943588641987123
+Target Rushing Yards (pretrained, normalized)
+0.0048264337399673805
+Target Rushing TDs (pretrained, normalized)
+0.0033700918652461017
+Target Receiving Yards (pretrained, normalized)
+0.007806157153693816
+Target Receiving TDs (pretrained, normalized)
+0.005667500130827621
+Target Fumbles (pretrained, normalized)
+0.004882720416642357
+Target Passing Yards (pretrained, unnormalized)
+156638.23061541215
+Target TD Passes (pretrained, unnormalized)
+7.7800295865443845
+Target Ints (pretrained, unnormalized)
+5.678853407914583
+Target Rushing Yards (pretrained, unnormalized)
+24191.55040686856
+Target Rushing TDs (pretrained, unnormalized)
+2.803235332344811
+Target Receiving Yards (pretrained, unnormalized)
+29614.964452550226
+Target Receiving TDs (pretrained, unnormalized)
+2.6240125033955013
+Target Fumbles (pretrained, unnormalized)
+0.5583580975719283
+Tabnet all (normalized, pretrained, summed)
+0.04010927457032085
+
+
+
+Baseline all (mse)
+23182.180594745707
+Baseline all (mse, normalized)
+0.004238015752595923
+Tabnet all (un-normalized)
+28411.491803153465
+Tabnet all
+0.00517279656415335
+Tabnet all (pretrained, normalized)
+0.005013659321290116
+Tabnet all (pretrained, unnormalized)
+27745.225440703034

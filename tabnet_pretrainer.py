@@ -10,7 +10,7 @@ from pytorch_tabnet.pretraining import TabNetPretrainer
 from utils import load_dataset
 
 
-def tabnet_pretrain(X: np.ndarray, Y: np.ndarray, normalize_data: bool = False) -> None:
+def tabnet_pretrain(X: np.ndarray, Y: np.ndarray, normalize_data: bool, save_path: str) -> None:
     unsupervised_model = TabNetPretrainer(
         optimizer_fn=torch.optim.Adam,
         optimizer_params=dict(lr=2e-2),
@@ -35,7 +35,7 @@ def tabnet_pretrain(X: np.ndarray, Y: np.ndarray, normalize_data: bool = False) 
         X_train=x_train,
         eval_set=[x_val],
         max_epochs=1000,
-        patience=5,
+        patience=10,
         batch_size=2048,
         virtual_batch_size=128,
         num_workers=0,
@@ -43,12 +43,14 @@ def tabnet_pretrain(X: np.ndarray, Y: np.ndarray, normalize_data: bool = False) 
         pretraining_ratio=0.5,
     )
 
-    save_path_name = os.path.join("models", "pretrained")
-    unsupervised_model.save_model(save_path_name)
+    unsupervised_model.save_model(save_path)
 
 
 if __name__ == '__main__':
-    data_path = os.path.join("data", "clean_data.csv")
-    _X, _Y, feature_cols, target_cols = load_dataset(data_path)
-    tabnet_pretrain(_X, _Y, normalize_data=False)  # run multitask model
+    for i in range(1, 6):
+        for normalized in [True, False]:
+            data_path = os.path.join("data", f"clean_data_{i}.csv")
+            _X, _Y, feature_cols, target_cols = load_dataset(data_path)
+            normalized_label = "normalized" if normalized else "unnormalized"
+            tabnet_pretrain(_X, _Y, normalize_data=normalized, save_path=os.path.join("models", f"pretrained_{normalized_label}_{i}"))  # run multitask model
 

@@ -8,3 +8,16 @@ test auxilary task
 try different eval metrics
 Only send in non-zero statistics
 Break apart mse and check individual
+Check feature importance
+
+
+future
+get ages
+get coaches/teams
+use auxilary tasks
+
+pros
+only one model with multitask
+
+cons
+longer training time
