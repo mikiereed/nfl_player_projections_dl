@@ -1,63 +1,53 @@
-import copy
+import csv
 import os
+from typing import Optional
+
 import numpy as np
 from sklearn.metrics import mean_squared_error
-from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 from pytorch_tabnet.tab_model import TabNetRegressor
-from pytorch_tabnet.pretraining import TabNetPretrainer
 
-from utils import load_dataset
+from utils import split_dataset
 
 
-def check_saved_model(saved_model: str, x_test: np.ndarray, y_test: np.ndarray) -> float:
+def check_saved_model(
+        saved_model: str,
+        x_test: np.ndarray,
+        y_test: np.ndarray,
+        y_scaler: Optional[MinMaxScaler],
+) -> float:
+    """
+    Load a saved model .zip and check results against test set.
+    Use utils.split_dataset for x_test, and y_test to ensure we get a test set that was not used in training
+    """
     clf = TabNetRegressor()
     clf.load_model(saved_model)
 
-    preds = clf.predict(x_test)
+    predictions = clf.predict(x_test)
 
-    # # test getting sum of each mse
-    # test_mse = 0
-    # for i in range(preds.shape[1]):
-    #     test_mse += mean_squared_error(y_pred=preds[:, i], y_true=y_test[:, i])
+    # de-normalization
+    if y_scaler:
+        predictions = y_scaler.inverse_transform(predictions)
+        y_test = y_scaler.inverse_transform(y_test)
 
-    test_mse = mean_squared_error(y_pred=preds, y_true=y_test)
-
-    print(f"FINAL TEST SCORE: {test_mse}")
+    test_mse = mean_squared_error(y_pred=predictions, y_true=y_test)
 
     return test_mse
 
 
-def _get_test_data(data_path: str, normalize_data=True) -> tuple:
-    X, Y, feature_cols, target_cols = load_dataset(data_path)
-
-    if normalize_data:
-        x_scaler = MinMaxScaler()
-        y_scaler = MinMaxScaler()
-        X = x_scaler.fit_transform(X)
-        Y = y_scaler.fit_transform(Y)
-    else:
-        y_scaler = None
-
-    # make sure random state is the same as model creation random state in tabnet.py
-    # otherwise, test group will include data from training/validation sets
-    x_train, x_val, y_train, y_val = train_test_split(X, Y, test_size=0.20, random_state=88)
-    x_val, x_test, y_val, y_test = train_test_split(x_val, y_val, test_size=0.50, random_state=88)
-
-    return x_test, y_test, y_scaler
-
-
 if __name__ == '__main__':
+    seed = 93
     mse = dict()
+    headers = ["previous years"]
     for i in range(1, 6):  # change to match years to check
         data_path = os.path.join("data", f"clean_data_{i}.csv")
-        x_test_normalized, y_test_normalized, y_scaler = _get_test_data(data_path, normalize_data=True)
-        x_test_unnormalized, y_test_unnormalized, _ = _get_test_data(data_path, normalize_data=True)
+        _, _, x_test_normalized, _, _, y_test_normalized, y_scaler = split_dataset(data_path, normalize_data=True)
+        _, _, x_test_unnormalized, _, _, y_test_unnormalized, _ = split_dataset(data_path, normalize_data=False)
 
-        for model in os.listdir("models"):
+        for model in os.listdir(f"models_{seed}"):
             if not model.startswith("tabnet"):
                 continue  # this is just pretraining weights
-            model_path = os.path.join("models", model)
+            model_path = os.path.join(f"models_{seed}", model)
             model_info = model.split("_")
             normalized_value = model_info[-2]
             year = int(model_info[-1].split(".")[0])
@@ -69,18 +59,31 @@ if __name__ == '__main__':
                 pretrained_value = "not pretrained"
 
             if normalized_value == "normalized":
-                x_test = np.copy(x_test_normalized)
-                y_test = np.copy(y_test_normalized)
+                _x_test = np.copy(x_test_normalized)
+                _y_test = np.copy(y_test_normalized)
+                _y_scaler = y_scaler
             else:
-                x_test = np.copy(x_test_unnormalized)
-                y_test = np.copy(y_test_unnormalized)
-            model_mse = check_saved_model(model_path, x_test, y_test)
-            if mse.get(year):
-                mse[year][f"{pretrained_value}, {normalized_value}"] = model_mse
-            else:
-                mse[year] = {f"{pretrained_value}, {normalized_value}": model_mse}
+                _x_test = np.copy(x_test_unnormalized)
+                _y_test = np.copy(y_test_unnormalized)
+                _y_scaler = None
 
-            # results_file = os.path.join(".", "results.txt")
-            # with open(results_file, "a") as f:
-            #     f.write(f"Tabnet all (normalized, pretrained, summed)\n")
-            #     f.write(f"{mse}\n")
+            model_mse = check_saved_model(model_path, _x_test, _y_test, _y_scaler)
+
+            label = f"{pretrained_value}, {normalized_value}"
+            if label not in headers:
+                headers.append(label)
+            if mse.get(year):
+                mse[year][label] = model_mse
+            else:
+                mse[year] = {label: model_mse}
+
+    # save results to a csv
+    results_file = os.path.join(".", f"results_{seed}_denormed.csv")
+    with open(results_file, 'w', newline='') as csvfile:
+        csvwriter = csv.writer(csvfile)
+        csvwriter.writerow(headers)
+        for year, models in mse.items():
+            row = [year]
+            for i in range(1, len(headers)):
+                row.append(models[headers[i]])
+            csvwriter.writerow(row)

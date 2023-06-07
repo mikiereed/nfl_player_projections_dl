@@ -1,5 +1,5 @@
 import csv
-
+import os
 
 Y_STATS = [
     "Passing Yards",
@@ -126,8 +126,8 @@ def create_data_csv(file_paths: list, number_of_previous_years: int = 3) -> None
 
 if __name__ == "__main__":
     _file_paths = [
-        "C:\\Users\\mikie\\OneDrive\\stanford homework\\cs230\\final project\\Career_Stats_Passing.csv",
-        "C:\\Users\\mikie\\OneDrive\\stanford homework\\cs230\\final project\\Career_Stats_Rushing.csv",
-        "C:\\Users\\mikie\\OneDrive\\stanford homework\\cs230\\final project\\Career_Stats_Receiving.csv",
+        os.path.join("data", "Career_Stats_Passing.csv"),
+        os.path.join("data", "Career_Stats_Rushing.csv"),
+        os.path.join("data", "Career_Stats_Receiving.csv"),
     ]
-    create_data_csv(_file_paths, number_of_previous_years=5)
+    create_data_csv(_file_paths, number_of_previous_years=1)

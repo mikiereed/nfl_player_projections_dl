@@ -1,47 +1,45 @@
 import os.path
 
 import numpy as np
-from sklearn import metrics
-from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
-from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_squared_error
 
-from utils import load_dataset
+from utils import split_dataset, get_columns
 
 
-def linear_regression_model_multi_mse(data_path: str, trials: int, random_seed: int, normalize_data: bool = False):
-    x, y, feature_columns, target_columns = load_dataset(csv_path=data_path)
+def linear_regression_model_multi_mse(data_path: str, normalize_data: bool) -> float:
+    x_train, x_val, x_test, y_train, y_val, y_test, y_scaler = split_dataset(data_path=data_path,
+                                                                             normalize_data=normalize_data,
+                                                                             )
+    feature_columns, target_columns, _, _ = get_columns(data_path=data_path)
+
+    y_pred = np.zeros(y_test.shape)
+    for idx, target in enumerate(target_columns):
+        y_i_train = y_train[:, idx]
+        lr = LinearRegression()
+        lr.fit(x_train, y_i_train)
+        y_i_pred = lr.predict(x_test)
+        y_pred[:, idx] = y_i_pred
+
+    # undo normalization
     if normalize_data:
-        x_scaler = MinMaxScaler()
-        y_scaler = MinMaxScaler()
-        x = x_scaler.fit_transform(x)
-        y = y_scaler.fit_transform(y)
+        y_pred = y_scaler.inverse_transform(y_pred)
+        y_test = y_scaler.inverse_transform(y_test)
 
-    test_mse = 0
-    for i in range(random_seed, trials + random_seed):
-        x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.10, random_state=i)
-        y_pred = np.zeros(y_test.shape)
-        for idx, target in enumerate(target_columns):
-            y_i_train = y_train[:, idx]
-            lr = LinearRegression()
-            lr.fit(x_train, y_i_train)
-            y_i_pred = lr.predict(x_test)
-            y_pred[:, idx] = y_i_pred
+    test_mse = mean_squared_error(y_pred=y_pred, y_true=y_test)
 
-        test_mse += mean_squared_error(y_pred=y_pred, y_true=y_test)
-        if i % 20 == 0:
-            print(i)
-
-    # print(f"Baseline LR {stat}")
-    print(f"{test_mse / trials}")
+    return test_mse
 
 
 if __name__ == "__main__":
-    linear_regression_model_multi_mse(
-        # data_x="C:\\Users\\mikie\\OneDrive\\stanford homework\\cs230\\final project\\clean_data.csv",
-        data_path=os.path.join("data", "clean_data.csv"),
-        trials=100,
-        random_seed=88,
-        normalize_data=True,
-    )
+    print("previous years,normalize,unnormalized")
+    for i in range(1, 6):
+        norm_mse = linear_regression_model_multi_mse(
+            data_path=os.path.join("data", f"clean_data_{i}.csv"),
+            normalize_data=True,
+        )
+        unnorm_mse = linear_regression_model_multi_mse(
+            data_path=os.path.join("data", f"clean_data_{i}.csv"),
+            normalize_data=False,
+        )
+        print(f"{i},{unnorm_mse},{norm_mse}")

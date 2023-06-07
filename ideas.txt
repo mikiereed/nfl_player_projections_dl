@@ -1,23 +1,25 @@
-test different number of previous years
-test multitask vs individual
-test gpu vs cpu
-add more predictive catagories (targets, rushing attempts, etc)
-test with just rushing, just passing, just receiveing (may fix normalization by getting rid of zeros)
-test normalization
-test auxilary task
-try different eval metrics
-Only send in non-zero statistics
-Break apart mse and check individual
-Check feature importance
-
-
-future
-get ages
-get coaches/teams
-use auxilary tasks
+# test different number of previous years
+# test multitask vs individual
+# test normalization
+# Break apart mse and check individual
 
 pros
 only one model with multitask
 
 cons
 longer training time
+
+future
+get more data (up to 2023)
+get ages
+get coaches/teams
+test with just rushing, just passing, just receiveing (may fix normalization by getting rid of zeros)
+Only send in non-zero statistics
+"Feature selection is instance-wise, e.g. it can be different for each row of the training dataset"
+use auxilary tasks
+play with pretraining hyperparams
+play with training params
+try different eval metrics
+Check feature importance
+"Above design choices allows TabNet to enable two kinds of interpretability: local interpretability that visualises the importance of features and how they are combined for a single row, and global interpretability which quantifies the contribution of each feature to the trained model across the dataset."
+add more predictive catagories (targets, rushing attempts, etc)

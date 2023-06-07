@@ -1,32 +1,33 @@
 # major code ideas from https://github.com/dreamquark-ai/tabnet/blob/develop/multi_regression_example.ipynb
 
 import os
-import numpy as np
+from typing import Union
+
 from sklearn.metrics import mean_squared_error
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import MinMaxScaler
 from pytorch_tabnet.tab_model import TabNetRegressor
 from pytorch_tabnet.pretraining import TabNetPretrainer
 
-from utils import load_dataset
+from utils import split_dataset, get_columns
 
 
-def tabnet(X: np.ndarray, Y: np.ndarray, normalize_data: bool, pretrained_model: str, save_path: str) -> float:
+def tabnet(data_path: str, normalize_data: bool, pretrained_model_path: Union[str, None], save_path: str) -> float:
+    """
+    Creates a tabnet model based on given parameters and data_set
+    :param data_path: data_set path
+    :param normalize_data: should data be normalized
+    :param pretrained_model_path: path of pretrained model. None means don't use a pretrained model
+    :param save_path: path to save model
+    :return: mse for model
+    """
     clf = TabNetRegressor()
 
-    if normalize_data:
-        x_scaler = MinMaxScaler()
-        y_scaler = MinMaxScaler()
-        X = x_scaler.fit_transform(X)
-        Y = y_scaler.fit_transform(Y)
+    x_train, x_val, x_test, y_train, y_val, y_test, y_scaler = split_dataset(data_path=data_path,
+                                                                             normalize_data=normalize_data,
+                                                                             )
 
-    x_train, x_val, y_train, y_val = train_test_split(X, Y, test_size=0.20, random_state=88)
-
-    x_val, x_test, y_val, y_test = train_test_split(x_val, y_val, test_size=0.50, random_state=88)
-
-    if pretrained_model:
+    if pretrained_model_path:
         loaded_pretrain = TabNetPretrainer()
-        loaded_pretrain.load_model(pretrained_model)
+        loaded_pretrain.load_model(pretrained_model_path)
     else:
         loaded_pretrain = None
 
@@ -34,6 +35,7 @@ def tabnet(X: np.ndarray, Y: np.ndarray, normalize_data: bool, pretrained_model:
         X_train=x_train, y_train=y_train,
         eval_set=[(x_train, y_train), (x_val, y_val)],
         eval_name=['train', 'valid'],
+        # eval_metric=['rmsle'],
         eval_metric=['mse'],
         max_epochs=1000,
         patience=50,
@@ -45,28 +47,29 @@ def tabnet(X: np.ndarray, Y: np.ndarray, normalize_data: bool, pretrained_model:
     )
 
     clf.save_model(save_path)
+    print(f"Saved at: {save_path}")
 
-    preds = clf.predict(x_test)
-
-    test_mse = mean_squared_error(y_pred=preds, y_true=y_test)
-
-    print(f"{save_path}")
-    print(f"FINAL TEST SCORE: {test_mse}")
+    predictions = clf.predict(x_test)
+    test_mse = mean_squared_error(y_pred=predictions, y_true=y_test)
+    print(f"Model MSE: {test_mse}")
 
     return test_mse
 
 
 if __name__ == '__main__':
     for i in range(1, 6):
-        data_path = os.path.join("data", f"clean_data_{i}.csv")
-        _X, _Y, feature_cols, target_cols = load_dataset(data_path)
+        _data_path = os.path.join("data", f"clean_data_{i}.csv")
         for pretrained in [True, False]:
             pretrained_value = "pretrained_" if pretrained else ""
             for normalized in [True, False]:
                 normalized_value = "normalized" if normalized else "unnormalized"
                 pretrained_model = None if not pretrained else os.path.join("models", f"pretrained_{normalized_value}_{i}.zip")
                 _save_path = os.path.join("models", f"tabnet_{pretrained_value}{normalized_value}_{i}")
-                tabnet(_X, _Y, normalize_data=True, pretrained_model=pretrained_model, save_path=_save_path)  # run multitask model
+                tabnet(data_path=_data_path,
+                       normalize_data=normalized,
+                       pretrained_model_path=pretrained_model,
+                       save_path=_save_path
+                       )
 
     # # run tabnet for each individual Y
     # for normalized in ["normalized", "unnormalized"]:
