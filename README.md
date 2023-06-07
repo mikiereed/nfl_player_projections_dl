@@ -9,4 +9,4 @@
 * Create Tabnet Models: ```tabnet.py```
 * Test tabnet models: ```check_saved_model.py```
 
-Previously tested models are found in the ```models_{random_seed}``` directories
+Previously created models are found in the ```models_{random_seed}``` directories
